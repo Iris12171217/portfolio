@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Send,
@@ -29,6 +28,8 @@ interface Message {
 }
 
 export default function Home() {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -39,6 +40,11 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
   const contactInfo = {
     email: "xuyahan1217@163.com",
@@ -286,7 +292,11 @@ export default function Home() {
 
               <CardContent className="flex-1 flex flex-col p-0">
                 {/* 消息区域 */}
-                <ScrollArea className="flex-1 p-6">
+                <div
+                  ref={messagesContainerRef}
+                  className="flex-1 p-6 overflow-y-auto"
+                  style={{ maxHeight: "calc(600px - 200px)" }}
+                >
                   <div className="space-y-5">
                     {messages.map((msg, idx) => (
                       <div
@@ -340,12 +350,14 @@ export default function Home() {
                         </div>
                       </div>
                     )}
+                    {/* Auto-scroll anchor */}
+                    <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
                 {/* 快捷问题按钮 */}
                 {showQuickQuestions && (
-                  <div className="px-6 py-4 border-t border-slate-100">
+                  <div className="px-6 py-4 border-t border-slate-100 max-h-[200px] overflow-y-auto">
                     <p className="text-xs text-slate-500 mb-3">💡 快速点击提问：</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {quickQuestions.map((q, idx) => (
